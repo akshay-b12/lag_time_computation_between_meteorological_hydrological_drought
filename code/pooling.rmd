@@ -1,0 +1,70 @@
+---
+title: "R Notebook"
+author: akshay
+date: 22/12/20
+output: html_notebook
+---
+
+The [R plugin](https://www.jetbrains.com/help/pycharm/r-plugin-support.html) for IntelliJ-based IDEs provides
+handy capabilities to work with the [R Markdown](https://www.jetbrains.com/help/pycharm/r-markdown.html) files.
+To [add](https://www.jetbrains.com/help/pycharm/r-markdown.html#add-code-chunk) a new R chunk,
+position the caret at any line or the code chunk, then click "+".
+
+The code chunk appears:
+```{r}
+library(lfstat)
+library(xts)
+rep.row<-function(x,n){
+   matrix(rep(x,each=n),nrow=n)
+}
+rep.col<-function(x,n){
+   matrix(rep(x,each=n), ncol=n, byrow=TRUE)
+}
+
+spi_data <- read.csv("../cluster-3/spi_cluster3.csv")
+#spi_data$date <- as.Date(spi_data$date, format = "%m/%d/%y")
+spi_xts <- xts(spi_data[-1], order.by = as.Date(spi_data$date, format = "%Y-%m-%d"))
+met_drought <- find_droughts(spi_xts, threshold = 0.0)
+ic <- pool_ic(met_drought)
+write.csv(ic, "../present/cluster-3/spi_pool.csv")
+write.csv(summary(ic), "../cluster-3/spi_summary.csv")
+#summary(ic)
+#plot(ic) #, xaxt = "n")
+
+sri_data = read.csv("../cluster-3/sri_cluster3.csv")
+#sri_data$date <- as.Date(sri_data$date, format = "%Y-%m-%d")
+#dates <- seq(as.Date("1966-01-01"), length=length(sri_data$date)*7, by="days")
+sri_xts <- xts(sri_data[-1], order.by = as.Date(sri_data$date, format = "%Y-%m-%d"))
+hydro_drought = find_droughts(sri_xts, threshold = 0.0)
+ic <- pool_ic(hydro_drought)
+write.csv(ic, "../cluster-3/sri_pool.csv")
+write.csv(summary(ic), "../cluster-3/sri_summary.csv")
+#summary(ic)
+#plot(ic)#, rep.col(sri_data$date, 5))
+```
+```{r}
+locations_df <- read.csv("../dataset/Discharge loctions Krishna Basin.csv") #SPI_station.csv
+library(tidyverse)
+library(ggmap)
+
+locations <- as_tibble(locations_df)
+library(sf)
+library(mapview)
+locations_sf <- st_as_sf(locations, coords = c("lon", "lat"), crs = 4326)
+m = mapview(locations_sf)
+mapshot(m, file = paste0(getwd(), "/map.png"), selfc)
+mapshot(m, url = paste0(getwd(), "/map.html"))
+
+```
+```{r}
+library(SCI)
+PRECIP = read.csv("/media/akshay/New Volume/iiit_subjects/sem3/project_drought_prediction/data/weekly_runoff_bagalkot.csv")
+spi.para <- fitSCI(PRECIP[,2],first.mon=1,time.scale=6,distr="gev",p0=TRUE)
+spi <- transformSCI(PRECIP[,2],first.mon=1,obj=spi.para)
+plot(date,spi,t="l")
+```
+Type any R code in the chunk, for example:
+
+
+Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk.
+Click the **Knit and Open Document** to built and preview an output.
